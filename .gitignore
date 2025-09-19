@@ -1,4 +1,6 @@
 # Byte-compiled / optimized / DLL files
+local-cdn/
+
 __pycache__/
 *.py[codz]
 *$py.class
