@@ -43,21 +43,20 @@ COPY ./src /code
 # Install the Python project requirements
 RUN pip install -r /tmp/requirements.txt
 
-# database isn't available during build
-# run any other commands that do not need the database
-# such as:
-# RUN python manage.py collectstatic --noinput
-
-# set the Django default project name
-ARG PROJ_NAME="cfehome"
-
 # create a bash script to run the Django project
 # this script will execute at runtime when
 # the container starts and the database is available
 RUN printf "#!/bin/bash\n" > ./paracord_runner.sh && \
     printf "RUN_PORT=\"\${PORT:-8000}\"\n\n" >> ./paracord_runner.sh && \
     printf "python manage.py migrate --no-input\n" >> ./paracord_runner.sh && \
-    printf "gunicorn ${PROJ_NAME}.wsgi:application --bind \"[::]:\$RUN_PORT\"\n" >> ./paracord_runner.sh
+    printf "# Auto-detect Django project name\n" >> ./paracord_runner.sh && \
+    printf "PROJ_NAME=\$(find . -name 'wsgi.py' -not -path './venv/*' | head -1 | sed 's|./||' | sed 's|/wsgi.py||')\n" >> ./paracord_runner.sh && \
+    printf "if [ -z \"\$PROJ_NAME\" ]; then\n" >> ./paracord_runner.sh && \
+    printf "  echo \"Error: Could not find Django project (wsgi.py not found)\"\n" >> ./paracord_runner.sh && \
+    printf "  exit 1\n" >> ./paracord_runner.sh && \
+    printf "fi\n" >> ./paracord_runner.sh && \
+    printf "echo \"Detected Django project name: \$PROJ_NAME\"\n" >> ./paracord_runner.sh && \
+    printf "gunicorn \$PROJ_NAME.wsgi:application --bind \"0.0.0.0:\$RUN_PORT\"\n" >> ./paracord_runner.sh
 
 # make the bash script executable
 RUN chmod +x paracord_runner.sh
