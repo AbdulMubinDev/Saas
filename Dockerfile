@@ -43,6 +43,8 @@ COPY ./src /code
 # Install the Python project requirements
 RUN pip install -r /tmp/requirements.txt
 
+RUN python manage.py collectstatic --noinput
+
 # create a bash script to run the Django project
 # this script will execute at runtime when
 # the container starts and the database is available
