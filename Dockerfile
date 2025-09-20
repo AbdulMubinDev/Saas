@@ -1,6 +1,6 @@
 # Set the python version as a build-time argument
 # with Python 3.12 as the default
-ARG PYTHON_VERSION=3.12-slim-bullseye
+ARG PYTHON_VERSION=3.12-slim
 FROM python:${PYTHON_VERSION}
 
 # Create a virtual environment
@@ -24,6 +24,8 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     # for CairoSVG
     libcairo2 \
+    # for health checks
+    curl \
     # other
     gcc \
     && rm -rf /var/lib/apt/lists/*
@@ -34,6 +36,10 @@ RUN mkdir -p /code
 # Set the working directory to that same code directory
 WORKDIR /code
 
+# Create a non-root user for security
+RUN useradd --create-home --shell /bin/bash django && chown -R django:django /code
+USER django
+
 # Copy the requirements file into the container
 COPY requirements.txt /tmp/requirements.txt
 
@@ -43,22 +49,18 @@ COPY ./src /code
 # Install the Python project requirements
 RUN pip install -r /tmp/requirements.txt
 
-RUN python manage.py collectstatic --noinput
-
 # create a bash script to run the Django project
 # this script will execute at runtime when
 # the container starts and the database is available
 RUN printf "#!/bin/bash\n" > ./paracord_runner.sh && \
+    printf "set -e\n\n" >> ./paracord_runner.sh && \
     printf "RUN_PORT=\"\${PORT:-8000}\"\n\n" >> ./paracord_runner.sh && \
-    printf "python manage.py migrate --no-input\n" >> ./paracord_runner.sh && \
-    printf "# Auto-detect Django project name\n" >> ./paracord_runner.sh && \
-    printf "PROJ_NAME=\$(find . -name 'wsgi.py' -not -path './venv/*' | head -1 | sed 's|./||' | sed 's|/wsgi.py||')\n" >> ./paracord_runner.sh && \
-    printf "if [ -z \"\$PROJ_NAME\" ]; then\n" >> ./paracord_runner.sh && \
-    printf "  echo \"Error: Could not find Django project (wsgi.py not found)\"\n" >> ./paracord_runner.sh && \
-    printf "  exit 1\n" >> ./paracord_runner.sh && \
-    printf "fi\n" >> ./paracord_runner.sh && \
-    printf "echo \"Detected Django project name: \$PROJ_NAME\"\n" >> ./paracord_runner.sh && \
-    printf "gunicorn \$PROJ_NAME.wsgi:application --bind \"0.0.0.0:\$RUN_PORT\"\n" >> ./paracord_runner.sh
+    printf "echo \"Running database migrations...\"\n" >> ./paracord_runner.sh && \
+    printf "python manage.py migrate --no-input\n\n" >> ./paracord_runner.sh && \
+    printf "echo \"Collecting static files...\"\n" >> ./paracord_runner.sh && \
+    printf "python manage.py collectstatic --no-input --clear\n\n" >> ./paracord_runner.sh && \
+    printf "echo \"Starting Gunicorn server on port \$RUN_PORT...\"\n" >> ./paracord_runner.sh && \
+    printf "exec gunicorn saas.wsgi:application --bind \"0.0.0.0:\$RUN_PORT\" --workers 2 --threads 4 --max-requests 1000 --max-requests-jitter 50 --log-level info\n" >> ./paracord_runner.sh
 
 # make the bash script executable
 RUN chmod +x paracord_runner.sh
@@ -68,6 +70,10 @@ RUN apt-get remove --purge -y \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:${PORT:-8000}/ || exit 1
 
 # Run the Django project via the runtime script
 # when the container starts
