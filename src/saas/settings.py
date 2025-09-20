@@ -146,7 +146,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_BASE_DIR = BASE_DIR / 'staticfiles'
+STATICFILES_VENDOR_DIR = STATICFILES_BASE_DIR / 'vendors'
 
+<<<<<<< HEAD
 # Development: Where Django looks for static files
 STATICFILES_BASE_DIR = BASE_DIR / 'staticfiles'
 STATICFILES_VENDOR_DIR = STATICFILES_BASE_DIR / 'vendors'
@@ -156,10 +159,16 @@ STATICFILES_VENDOR_DIR.mkdir(exist_ok=True, parents=True)
 
 STATICFILES_DIRS = [
     STATICFILES_BASE_DIR,
+=======
+#source(s) for python manage.py collectstatic
+STATICFILES_DIRS = [
+    STATICFILES_BASE_DIR
+>>>>>>> parent of f126172 (debugging)
 ]
 
-# Production: Where collectstatic collects all static files
-STATIC_ROOT = BASE_DIR / 'staticfiles_collected'
+#output dir for python manage.py collectstatic
+# Use a consistent path that works for both build and production
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STORAGES = {
     "staticfiles": {
