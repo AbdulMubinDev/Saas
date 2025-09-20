@@ -36,10 +36,6 @@ RUN mkdir -p /code
 # Set the working directory to that same code directory
 WORKDIR /code
 
-# Create a non-root user for security
-RUN useradd --create-home --shell /bin/bash django && chown -R django:django /code
-USER django
-
 # Copy the requirements file into the container
 COPY requirements.txt /tmp/requirements.txt
 
@@ -48,6 +44,10 @@ COPY ./src /code
 
 # Install the Python project requirements
 RUN pip install -r /tmp/requirements.txt
+
+# Create a non-root user for security
+RUN useradd --create-home --shell /bin/bash django && chown -R django:django /code /opt/venv
+USER django
 
 # create a bash script to run the Django project
 # this script will execute at runtime when
