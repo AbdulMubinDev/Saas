@@ -51,17 +51,48 @@ A Django-based SaaS application with PostgreSQL database, designed for both deve
 ### Automatic Deployment
 
 1. **Push to Railway:**
-   ```bash
-   railway login
-   railway init
-   railway up
-   ```
+    ```bash
+    railway login
+    railway init
+    railway up
+    ```
 
 2. **Set Environment Variables in Railway Dashboard:**
-   - `DJANGO_DEBUG=False`
-   - `DJANGO_SECRET_KEY` (Generate a secure key)
-   - `DATABASE_URL` (PostgreSQL connection string)
-   - `CONN_MAX_AGE=30`
+    - `DJANGO_DEBUG=False` (Required for production)
+    - `DJANGO_SECRET_KEY` (Generate a secure key - use: `python -c 'import secrets; print(secrets.token_urlsafe())'`)
+    - `DATABASE_URL` (Railway will auto-provide this for PostgreSQL)
+    - `CONN_MAX_AGE=30` (Optional - for database connection pooling)
+
+### Manual Deployment
+
+1. **Build and push Docker image:**
+    ```bash
+    docker build -t your-app-name .
+    docker tag your-app-name registry.railway.app/your-project-id/your-app-name
+    docker push registry.railway.app/your-project-id/your-app-name
+    ```
+
+2. **Deploy on Railway:**
+    - Use the Railway dashboard to deploy the Docker image
+    - Configure environment variables as mentioned above
+
+### Troubleshooting
+
+If you encounter a 500 error:
+
+1. **Check Railway logs:**
+    ```bash
+    railway logs
+    ```
+
+2. **Test health endpoint:**
+    - Visit `https://your-app.railway.app/health/` to check system status
+
+3. **Common issues:**
+    - Ensure `DJANGO_DEBUG=False` in production
+    - Verify `DATABASE_URL` is properly set
+    - Check that all required environment variables are configured
+    - Ensure static files are properly collected
 
 ### Manual Deployment
 

@@ -25,15 +25,15 @@ SECRET_KEY = config('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DJANGO_DEBUG', default=False , cast=bool)
 
-ALLOWED_HOSTS = [
-    ".railway.app"
-]
+# Get allowed hosts from environment variable or use defaults
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='.railway.app', cast=lambda v: [s.strip() for s in v.split(',')])
 
-if DEBUG:
-    ALLOWED_HOSTS += [
-        'localhost',
-        '127.0.0.1'
-    ]
+# Always allow localhost hosts for development
+ALLOWED_HOSTS += [
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0'
+]
 
 # Application definition
 
@@ -89,9 +89,11 @@ WSGI_APPLICATION = 'saas.wsgi.application'
 #     }
 # }
 
-CONN_MAX_AGE=config("CONN_MAX_AGE", default=30, cast=int)
-DATABASE_URL= config("DATABASE_URL", cast=str)
-if DATABASE_URL is not None:
+# Database configuration with fallback
+DATABASE_URL = config("DATABASE_URL", default="", cast=str)
+CONN_MAX_AGE = config("CONN_MAX_AGE", default=30, cast=int)
+
+if DATABASE_URL and DATABASE_URL != "":
     import dj_database_url
     DATABASES = {
         "default": dj_database_url.config(
@@ -99,6 +101,14 @@ if DATABASE_URL is not None:
             conn_health_checks=True,
             conn_max_age=CONN_MAX_AGE,
         )
+    }
+else:
+    # Fallback to SQLite for development/testing
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
 
 # Password validation
@@ -176,6 +186,39 @@ if all([ADMIN_USER_NAME, ADMIN_USER_EMAIL]):
         (f'{ADMIN_USER_NAME}', f'{ADMIN_USER_EMAIL}')
     ]
     MANAGERS=ADMINS
+
+# Logging configuration for production debugging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
