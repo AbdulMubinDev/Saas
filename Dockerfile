@@ -36,15 +36,6 @@ RUN mkdir -p /code
 # Set the working directory to that same code directory
 WORKDIR /code
 
-# Copy the requirements file into the container
-COPY requirements.txt /tmp/requirements.txt
-
-# copy the project code into the container's working directory
-COPY ./src /code
-
-# Install the Python project requirements
-RUN pip install -r /tmp/requirements.txt
-
 # Create a non-root user for security
 RUN useradd --create-home --shell /bin/bash django && chown -R django:django /code /opt/venv
 USER django
@@ -70,6 +61,19 @@ RUN apt-get remove --purge -y \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Copy the requirements file into the container
+COPY requirements.txt /tmp/requirements.txt
+
+# copy the project code into the container's working directory
+COPY ./src /code
+
+# Install the Python project requirements
+RUN pip install -r /tmp/requirements.txt
+
+# Create a non-root user for security
+RUN useradd --create-home --shell /bin/bash django && chown -R django:django /code /opt/venv
+USER django
 
 # Add health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
