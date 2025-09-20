@@ -65,6 +65,13 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
+# Environment files
+.env.local
+.env.production
+
+# Static files collected for production
+src/staticfiles_collected/
+
 # Flask stuff:
 instance/
 .webassets-cache
