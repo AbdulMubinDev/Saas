@@ -45,9 +45,6 @@ COPY ./src /code
 # Install the Python project requirements
 RUN pip install -r /tmp/requirements.txt
 
-# Create logs directory
-RUN mkdir -p /code/logs
-
 # create a bash script to run the Django project
 # this script will execute at runtime when
 # the container starts and the database is available
@@ -58,8 +55,6 @@ RUN printf "#!/bin/bash\n" > ./paracord_runner.sh && \
     printf "python manage.py migrate --no-input\n\n" >> ./paracord_runner.sh && \
     printf "echo \"Collecting static files...\"\n" >> ./paracord_runner.sh && \
     printf "python manage.py collectstatic --no-input --clear\n\n" >> ./paracord_runner.sh && \
-    printf "echo \"Starting background email service...\"\n" >> ./paracord_runner.sh && \
-    printf "python manage.py send_startup_email &\n\n" >> ./paracord_runner.sh && \
     printf "echo \"Starting Gunicorn server on port \$RUN_PORT...\"\n" >> ./paracord_runner.sh && \
     printf "exec gunicorn saas.wsgi:application --bind \"0.0.0.0:\$RUN_PORT\" --workers 2 --threads 4 --max-requests 1000 --max-requests-jitter 50 --log-level info\n" >> ./paracord_runner.sh
 
@@ -78,7 +73,7 @@ USER django
 
 # Add health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:${PORT:-8000}/health/ || exit 1
+    CMD curl -f http://localhost:${PORT:-8000}/ || exit 1
 
 # Run the Django project via the runtime script
 # when the container starts
