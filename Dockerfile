@@ -55,6 +55,8 @@ RUN printf "#!/bin/bash\n" > ./paracord_runner.sh && \
     printf "python manage.py migrate --no-input\n\n" >> ./paracord_runner.sh && \
     printf "echo \"Collecting static files...\"\n" >> ./paracord_runner.sh && \
     printf "python manage.py collectstatic --no-input --clear\n\n" >> ./paracord_runner.sh && \
+    printf "echo \"Sending server startup confirmation email...\"\n" >> ./paracord_runner.sh && \
+    printf "python manage.py send_startup_email\n\n" >> ./paracord_runner.sh && \
     printf "echo \"Starting Gunicorn server on port \$RUN_PORT...\"\n" >> ./paracord_runner.sh && \
     printf "exec gunicorn saas.wsgi:application --bind \"0.0.0.0:\$RUN_PORT\" --workers 2 --threads 4 --max-requests 1000 --max-requests-jitter 50 --log-level info\n" >> ./paracord_runner.sh
 
