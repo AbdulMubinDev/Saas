@@ -13,8 +13,7 @@ from decouple import config
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent
-
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -140,13 +139,18 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# Development: Where Django looks for static files
-STATICFILES_DIRS = [
-    BASE_DIR / 'staticfiles',
-]
+# # Development: Where Django looks for static files
+# STATICFILES_DIRS = [
+#     BASE_DIR / 'staticfiles',
+# ]
 
-# Directory for vendor static files (downloaded from CDNs)
-STATICFILES_VENDOR_DIR = BASE_DIR / 'staticfiles' / 'vendors'
+# # Directory for vendor static files (downloaded from CDNs)
+# STATICFILES_VENDOR_DIR = BASE_DIR / 'staticfiles' / 'vendors'
+
+STATICFILES_DIRS = []
+staticfiles_dir = BASE_DIR / 'staticfiles'
+if staticfiles_dir.exists():
+    STATICFILES_DIRS = [staticfiles_dir]
 
 # Production: Where collectstatic collects all static files
 STATIC_ROOT = BASE_DIR / 'staticfiles_collected'
@@ -155,3 +159,6 @@ STATIC_ROOT = BASE_DIR / 'staticfiles_collected'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+print(f"{BASE_DIR}")
+print(f"{STATICFILES_DIRS}")
