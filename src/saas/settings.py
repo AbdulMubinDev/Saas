@@ -26,7 +26,10 @@ SECRET_KEY = config('DJANGO_SECRET_KEY')
 DEBUG = config('DJANGO_DEBUG', default=False , cast=bool)
 
 ALLOWED_HOSTS = [
-    "*.railway.app"
+    "*.railway.app",
+    "*.up.railway.app",
+    "localhost",
+    "127.0.0.1"
 ]
 
 if DEBUG:
@@ -141,6 +144,9 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'staticfiles',
 ]
+
+# Directory for vendor static files (downloaded from CDNs)
+STATICFILES_VENDOR_DIR = BASE_DIR / 'staticfiles' / 'vendors'
 
 # Production: Where collectstatic collects all static files
 STATIC_ROOT = BASE_DIR / 'staticfiles_collected'
