@@ -151,6 +151,8 @@ STATICFILES_DIRS = []
 staticfiles_dir = BASE_DIR / 'staticfiles'
 if staticfiles_dir.exists():
     STATICFILES_DIRS = [staticfiles_dir]
+else:
+    staticfiles_dir.mkdir(parents=True, exist_ok=True)
 
 # Production: Where collectstatic collects all static files
 STATIC_ROOT = BASE_DIR / 'staticfiles_collected'
@@ -159,6 +161,3 @@ STATIC_ROOT = BASE_DIR / 'staticfiles_collected'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-print(f"{BASE_DIR}")
-print(f"{STATICFILES_DIRS}")
