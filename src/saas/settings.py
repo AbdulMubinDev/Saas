@@ -28,8 +28,6 @@ DEBUG = config('DJANGO_DEBUG', default=False , cast=bool)
 ALLOWED_HOSTS = [
     "*.railway.app",
     ".railway.app",
-    "localhost",
-    "127.0.0.1",
     "saas-production-944c.up.railway.app",
 ]
 
@@ -93,6 +91,7 @@ WSGI_APPLICATION = 'saas.wsgi.application'
 #     }
 # }
 
+#Database configuration using dj-database-url and environment variable
 CONN_MAX_AGE=config("CONN_MAX_AGE", default=30, cast=int)
 DATABASE_URL= config("DATABASE_URL", cast=str)
 if DATABASE_URL is not None:
