@@ -27,7 +27,7 @@ DEBUG = config('DJANGO_DEBUG', default=False , cast=bool)
 ALLOWED_HOSTS = [
     "*.railway.app",
     ".railway.app",
-    "saas-production-944c.up.railway.app",
+    ".saas-production-944c.up.railway.app",
 ]
 
 if DEBUG:
